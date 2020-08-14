@@ -1,0 +1,128 @@
+어떤 색의 다이아몬드가 가장 무거울까?
+================
+강화정
+August 11, 2020
+
+## 다이아몬드 색과 질량(carat)의 관계
+
+``` r
+library(tidyverse)
+```
+
+    ## -- Attaching packages ------------------------- tidyverse 1.3.0 --
+
+    ## √ ggplot2 3.3.2     √ purrr   0.3.4
+    ## √ tibble  3.0.3     √ dplyr   1.0.0
+    ## √ tidyr   1.1.1     √ stringr 1.4.0
+    ## √ readr   1.3.1     √ forcats 0.5.0
+
+    ## -- Conflicts ---------------------------- tidyverse_conflicts() --
+    ## x dplyr::filter() masks stats::filter()
+    ## x dplyr::lag()    masks stats::lag()
+
+### 분석 절차
+
+1.  다이아몬드를 색깔별로 분류하고, 평균 질량에 따라 가장 질량이 큰 다이아몬드를 알아봅니다.
+2.  개별 다이아몬드 중 가장 질량이 큰 것은 무슨 색인지 알아봅니다.
+
+### 변수 검토 및 전처리하기
+
+#### 1\. 변수 검토하기
+
+1-1 다이아몬드의 색을 나타내는 변수 color의 타입을 파악합니다.
+
+``` r
+class(diamonds$color)
+```
+
+    ## [1] "ordered" "factor"
+
+1-2 D부터 J까지의 범주형 변수로, 색깔별 다이아몬드 수를 파악합니다. diamonds의 R문서를 참고했을 때, D가 가장
+좋고, J가 가장 안 좋은 질의 다이아몬드임을 알 수 있습니다.
+
+``` r
+summary(diamonds$color)
+```
+
+    ##     D     E     F     G     H     I     J 
+    ##  6775  9797  9542 11292  8304  5422  2808
+
+2-1 다이아몬드의 질량을 나타내는 변수(carat)의 타입을 파악하고, 분포를 파악해보겠습니다.
+
+``` r
+class(diamonds$carat)
+```
+
+    ## [1] "numeric"
+
+``` r
+summary(diamonds$carat)
+```
+
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##  0.2000  0.4000  0.7000  0.7979  1.0400  5.0100
+
+0.4 \~ 1.04 carat 사이에 가장 많은 다이아몬드가 존재하는 것을 알 수 있습니다. 또한, 가장 무거운 다이아몬드는
+5.01 carat인 것을 알 수 있습니다.
+
+#### 2\. 전처리
+
+위에서 color변수와 carat 변수를 파악했을 때, 이상치가 존재하지 않으므로 생략하도록 하겠습니다.
+
+### 색깔별 다이아몬드 질량 분석하기
+
+#### 1\. 색깔별 다이아몬드 질량 평균표 만들기
+
+``` r
+color_mass <- diamonds %>%
+  group_by(color) %>% 
+  summarise(mean_carat = mean(carat))
+```
+
+    ## `summarise()` ungrouping output (override with `.groups` argument)
+
+``` r
+color_mass
+```
+
+    ## # A tibble: 7 x 2
+    ##   color mean_carat
+    ##   <ord>      <dbl>
+    ## 1 D          0.658
+    ## 2 E          0.658
+    ## 3 F          0.737
+    ## 4 G          0.771
+    ## 5 H          0.912
+    ## 6 I          1.03 
+    ## 7 J          1.16
+
+#### 2\. 그래프 만들기
+
+위에서 구한 수치를 한 눈에 쉽게 파악할 수 있게 그래프로 표현해보겠습니다.
+
+``` r
+ggplot(color_mass, aes(x=color, y=mean_carat)) + geom_col(aes(fill=color))
+```
+
+![](diamond_color-and-carat_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+그래프를 보았을 때, 가장 질이 좋지 않은 J색 다이아몬드의 평균 질량이 가장 높은 것을 확인할 수 있습니다. 색깔별 등급과 평균
+질량은 반비례 관계에 있다는 것 역시 확인할 수 있습니다.
+
+### 가장 무거운 다이아몬드의 색깔 파악하기
+
+다이아몬드 질량의 최대값은 5.01 carat인 것을 변수 파악 단계에서 확인할 수 있었습니다. 이번에는 그래프를 통해 이 최대
+질량의 다이아몬드는 무슨 색인지 알아보겠습니다.
+
+#### 그래프 만들기
+
+``` r
+ggplot(diamonds, aes(x=color, y=carat)) + geom_point(aes(color=color))
+```
+
+![](diamond_color-and-carat_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+그래프를 통해, 최대 질량의 다이아몬드가 J 색인 것을 볼 수 있습니다.
+
+### 결론
+
+J 색깔의 다이아몬드가 평균적으로도, 개별적으로도 가장 무거운 사실을 알 수 있습니다.
